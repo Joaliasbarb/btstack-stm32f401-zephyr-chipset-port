@@ -45,7 +45,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+static TaskHandle_t initTask = NULL;
+static void initRun(void *pvParam);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,7 +92,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+#if CONFIG_SYSTEMVIEW
+    SEGGER_SYSVIEW_Conf();
+#endif
+    xTaskCreate(initRun, "Init task", 512, NULL, INIT_TASK_PRIO, &initTask);
+    vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -222,6 +227,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void initRun(void *pvParam)
+{
+	while(1)
+	{
+		printf("Hello\n");
+		vTaskDelay(pdMS_TO_TICKS(1000));
+	}
+}
+
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     /* Run time stack overflow checking is performed if
